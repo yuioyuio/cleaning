@@ -9,6 +9,9 @@ import android.widget.TextView;
 
 import java.util.List;
 
+import yuioyuoi.cleaning.R;
+import yuioyuoi.cleaning.model.Room;
+
 public class ListAdapter extends ArrayAdapter<Room> {
 
     public ListAdapter(Context context, int textViewResourceId) {

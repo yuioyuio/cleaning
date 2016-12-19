@@ -8,6 +8,8 @@ import android.widget.TextView;
 
 import java.util.Random;
 
+import yuioyuoi.cleaning.R;
+
 public class DisplayMessageActivity extends Activity {
 
     @Override
@@ -17,7 +19,7 @@ public class DisplayMessageActivity extends Activity {
 
 
         Intent intent = getIntent();
-        String message = intent.getStringExtra(MainActivity.EXTRA_MESSAGE);
+        String message = intent.getStringExtra(Dashboard.EXTRA_MESSAGE);
         TextView textView = (TextView) findViewById( R.id.view_message );
         textView.setTextSize( 40 );
         textView.setText( message );
