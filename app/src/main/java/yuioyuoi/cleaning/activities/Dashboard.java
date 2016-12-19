@@ -1,5 +1,9 @@
 package yuioyuoi.cleaning.activities;
 
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -12,6 +16,13 @@ import android.view.MenuItem;
 import yuioyuoi.cleaning.R;
 
 public class Dashboard extends AppCompatActivity {
+
+
+    private static final String TAG = "MyActivity";
+
+    public final static String EXTRA_MESSAGE = "com.mycompany.myfirstapp.MESSAGE";
+    public final static String KEY_PREFS_FIRST_LAUNCH = "first_launch";
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,6 +39,26 @@ public class Dashboard extends AppCompatActivity {
                         .setAction("Action", null).show();
             }
         });
+
+        SharedPreferences prefs = this.getPreferences( Context.MODE_PRIVATE );
+        // we only do this the first time the application is launched
+        if( prefs.getBoolean( KEY_PREFS_FIRST_LAUNCH, true ) )
+        {
+            prefs.edit().putBoolean( KEY_PREFS_FIRST_LAUNCH, false ).commit();
+
+            // TODO if we have no alarms we should disable the boot receiver until the user opens
+            // the app again an enables notifications so that we don't call the boot receiver
+            // unnecessarily
+
+            // we enable the boot receiver so that we can reset the notifications when the user
+            // restarts their android
+            ComponentName receiver = new ComponentName( this, SampleBootReceiver.class );
+            PackageManager pm = this.getPackageManager();
+
+            pm.setComponentEnabledSetting(receiver,
+                    PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+                    PackageManager.DONT_KILL_APP);
+        }
     }
 
     @Override
