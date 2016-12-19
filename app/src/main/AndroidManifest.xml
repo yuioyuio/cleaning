@@ -23,6 +23,15 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name=".activities.DisplayMessageActivity"
+            android:label="@string/title_activity_display_message"
+            android:parentActivityName=".activities.Dashboard" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".activities.Dashboard" />
+        </activity>
+
         <!-- receivers -->
         <receiver android:name=".notifications.NotificationPublisher" />
         <receiver android:name=".startup.SampleBootReceiver"

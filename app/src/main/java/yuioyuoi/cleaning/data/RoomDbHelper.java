@@ -4,7 +4,7 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-import com.mycompany.myfirstapp.RoomContract.RoomEntry;
+import yuioyuoi.cleaning.model.RoomContract.RoomEntry;
 
 /**
  * Created by Jean on 28/11/2016.
@@ -28,7 +28,7 @@ public class RoomDbHelper extends SQLiteOpenHelper
             "DROP TABLE IF EXISTS " + RoomEntry.TABLE_NAME;
 
     // If you change the database schema, you must increment the database version.
-    public static final int DATABASE_VERSION = 2;
+    public static final int DATABASE_VERSION = 1;
     public static final String DATABASE_NAME = "cleaning.db";
 
     public RoomDbHelper(Context context) {
