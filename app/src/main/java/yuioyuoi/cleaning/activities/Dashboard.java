@@ -43,9 +43,9 @@ import yuioyuoi.cleaning.startup.SampleBootReceiver;
 public class Dashboard extends AppCompatActivity {
 
 
-    private static final String TAG = "MyActivity";
+    private static final String TAG = "Dashboard";
 
-    public final static String EXTRA_MESSAGE = "com.mycompany.myfirstapp.MESSAGE";
+    public final static String EXTRA_MESSAGE = "yuioyuio.cleaning.activities.extra.MESSAGE";
     public final static String KEY_PREFS_FIRST_LAUNCH = "first_launch";
 
 
@@ -60,8 +60,12 @@ public class Dashboard extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                // TODO on the plus button go to the activity to add room
+                Intent intent = new Intent( this, DisplayMessageActivity.class );
+                startActivity( intent );
+
+                //Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+                //        .setAction("Action", null).show();
             }
         });
 
