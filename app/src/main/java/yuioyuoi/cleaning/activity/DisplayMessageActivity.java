@@ -1,4 +1,4 @@
-package yuioyuoi.cleaning.activities;
+package yuioyuoi.cleaning.activity;
 
 import android.app.Activity;
 import android.content.Intent;

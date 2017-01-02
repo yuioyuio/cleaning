@@ -1,4 +1,4 @@
-package yuioyuoi.cleaning.notifications;
+package yuioyuoi.cleaning.notification;
 
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -21,6 +21,7 @@ public class NotificationPublisher extends BroadcastReceiver {
 
         Notification notification = intent.getParcelableExtra(NOTIFICATION);
         int id = intent.getIntExtra(NOTIFICATION_ID, 0);
+        System.out.println( "notifying with id " + id + " " + notification.toString());
         notificationManager.notify(id, notification);
     }
 }

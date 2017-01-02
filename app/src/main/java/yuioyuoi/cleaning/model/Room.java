@@ -1,12 +1,16 @@
 package yuioyuoi.cleaning.model;
 
+import java.util.Date;
+
 /**
  * Created by Jean on 12/12/2016.
  */
 
 public class Room
 {
-    public String room;
+    public String name;
     public String subtype1;
-    public String reminder;
+    public String subtype2;
+    public Date reminder;
+    public String recurrence;
 }

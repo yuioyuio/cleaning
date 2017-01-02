@@ -6,9 +6,11 @@
     <string name="button_add">Add</string>
     <string name="action_search">Search</string>
     <string name="title_activity_display_message">My Message</string>
+    <string name="title_activity_add_room">Add Room</string>
 
     <string name="button_store">Store</string>
     <string name="button_read">Read</string>
+    <string name="button_boot">Boot</string>
 
     <string name="hello_world">Hello world!</string>
 </resources>

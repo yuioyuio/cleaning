@@ -1,4 +1,4 @@
-package yuioyuoi.cleaning.activities.widgets;
+package yuioyuoi.cleaning.activity.adapter;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -38,10 +38,12 @@ public class ListAdapter extends ArrayAdapter<Room> {
         if (p != null) {
             TextView tt1 = (TextView) v.findViewById(R.id.room);
             TextView tt2 = (TextView) v.findViewById(R.id.subtype1);
-            TextView tt3 = (TextView) v.findViewById(R.id.reminder);
+            TextView tt3 = (TextView) v.findViewById(R.id.subtype1);
+            TextView tt4 = (TextView) v.findViewById(R.id.reminder);
+            TextView tt5 = (TextView) v.findViewById(R.id.recurrence);
 
             if (tt1 != null) {
-                tt1.setText(p.room);
+                tt1.setText(p.name);
             }
 
             if (tt2 != null) {
@@ -49,7 +51,15 @@ public class ListAdapter extends ArrayAdapter<Room> {
             }
 
             if (tt3 != null) {
-                tt3.setText(p.reminder);
+                tt3.setText(p.subtype2);
+            }
+
+            if (tt4 != null) {
+                tt4.setText(p.reminder.toString());
+            }
+
+            if (tt5 != null) {
+                tt5.setText(p.recurrence);
             }
         }
 

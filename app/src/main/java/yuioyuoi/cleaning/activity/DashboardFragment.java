@@ -1,4 +1,4 @@
-package yuioyuoi.cleaning.activities;
+package yuioyuoi.cleaning.activity;
 
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
