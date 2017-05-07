@@ -1,5 +1,6 @@
 package yuioyuoi.cleaning.data;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -35,6 +36,7 @@ public class RoomDbHelper extends SQLiteOpenHelper
                     RoomEntry.COLUMN_NAME_ROOM + TEXT_TYPE + COMMA_SEP +
                     RoomEntry.COLUMN_NAME_SUBTYPE_1 + TEXT_TYPE + COMMA_SEP +
                     RoomEntry.COLUMN_NAME_SUBTYPE_2 + TEXT_TYPE + COMMA_SEP +
+                    RoomEntry.COLUMN_NAME_ACTION + TEXT_TYPE + COMMA_SEP +
                     RoomEntry.COLUMN_NAME_RECURRENCE + TEXT_TYPE + COMMA_SEP +
                     RoomEntry.COLUMN_NAME_REMINDER + TEXT_TYPE + " )";
 
@@ -64,6 +66,28 @@ public class RoomDbHelper extends SQLiteOpenHelper
         onUpgrade(db, oldVersion, newVersion);
     }
 
+    public void newRoom( String room,
+                         String subtype1,
+                         String subtype2,
+                         String action,
+                         String reminder,
+                         String recurrence )
+    {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(RoomContract.RoomEntry.COLUMN_NAME_ROOM, room);
+        values.put(RoomContract.RoomEntry.COLUMN_NAME_SUBTYPE_1, subtype1);
+        values.put(RoomContract.RoomEntry.COLUMN_NAME_SUBTYPE_2, subtype2);
+        values.put(RoomContract.RoomEntry.COLUMN_NAME_ACTION, action);
+        values.put(RoomContract.RoomEntry.COLUMN_NAME_REMINDER, reminder);
+        values.put(RoomContract.RoomEntry.COLUMN_NAME_RECURRENCE, recurrence);
+
+        long newRowId = db.insert(RoomContract.RoomEntry.TABLE_NAME, null, values);
+        Log.i(TAG, "inserted row id " + newRowId);
+
+        db.close();
+    }
+
     public List<Room> getAllRooms()
     {
         // TODO should do this in an async way and not on the main thread
@@ -74,12 +98,13 @@ public class RoomDbHelper extends SQLiteOpenHelper
                 RoomContract.RoomEntry.COLUMN_NAME_ROOM,
                 RoomContract.RoomEntry.COLUMN_NAME_SUBTYPE_1,
                 RoomContract.RoomEntry.COLUMN_NAME_SUBTYPE_2,
+                RoomContract.RoomEntry.COLUMN_NAME_ACTION,
                 RoomContract.RoomEntry.COLUMN_NAME_REMINDER,
                 RoomContract.RoomEntry.COLUMN_NAME_RECURRENCE
         };
 
         String sortOrder =
-                RoomContract.RoomEntry.COLUMN_NAME_REMINDER + " DESC";
+                RoomContract.RoomEntry.COLUMN_NAME_REMINDER + " ASC";
 
         Cursor cursor = db.query(
                 RoomContract.RoomEntry.TABLE_NAME,
@@ -98,10 +123,11 @@ public class RoomDbHelper extends SQLiteOpenHelper
             room.name = cursor.getString(cursor.getColumnIndex(RoomContract.RoomEntry.COLUMN_NAME_ROOM));
             room.subtype1 = cursor.getString(cursor.getColumnIndex(RoomContract.RoomEntry.COLUMN_NAME_SUBTYPE_1));
             room.subtype2 = cursor.getString(cursor.getColumnIndex(RoomContract.RoomEntry.COLUMN_NAME_SUBTYPE_2));
+            room.action = cursor.getString(cursor.getColumnIndex(RoomContract.RoomEntry.COLUMN_NAME_ACTION));
 
             try
             {
-                room.reminder = ISO_8601_FORMAT.parse( cursor.getString(cursor.getColumnIndex(RoomEntry.COLUMN_NAME_REMINDER)) );
+                room.reminder = ISO_8601_FORMAT.parse( cursor.getString( cursor.getColumnIndex( RoomEntry.COLUMN_NAME_REMINDER ) ) );
             }
             catch( ParseException e )
             {

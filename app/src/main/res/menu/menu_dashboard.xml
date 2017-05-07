@@ -16,4 +16,7 @@
     <item android:id="@+id/action_30"
         android:title="30 seconds"
         app:showAsAction="never" />
+    <item android:id="@+id/boot"
+        android:title="Simulate boot"
+        app:showAsAction="never" />
 </menu>

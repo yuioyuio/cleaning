@@ -16,6 +16,7 @@ public final class RoomContract
         public static final String COLUMN_NAME_ROOM = "room";
         public static final String COLUMN_NAME_SUBTYPE_1 = "subtype1";
         public static final String COLUMN_NAME_SUBTYPE_2 = "subtype2";
+        public static final String COLUMN_NAME_ACTION = "action";
         public static final String COLUMN_NAME_REMINDER = "reminder";
         public static final String COLUMN_NAME_RECURRENCE = "recurrence";
     }

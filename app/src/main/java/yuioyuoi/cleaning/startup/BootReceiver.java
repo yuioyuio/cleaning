@@ -9,6 +9,7 @@ import java.util.Calendar;
 import java.util.List;
 
 import yuioyuoi.cleaning.data.RoomDbHelper;
+import yuioyuoi.cleaning.formatters.NotificationFormatter;
 import yuioyuoi.cleaning.model.Room;
 import yuioyuoi.cleaning.notification.NotificationScheduler;
 
@@ -29,8 +30,6 @@ public class BootReceiver extends BroadcastReceiver
     @Override
     public void onReceive( Context context, Intent intent )
     {
-        System.out.println( "********************* WE BOOTED *************************" );
-
         Log.i( TAG, "beep boop - we booted!" );
 
         RoomDbHelper roomDbHelper = new RoomDbHelper( context );
@@ -38,17 +37,15 @@ public class BootReceiver extends BroadcastReceiver
 
         for( Room room : roomList )
         {
-            // TODO put this in the global strings
-            String message = "Your " + room.name + " needs cleaning! Get off your arse and just do it.";
+            String message = NotificationFormatter.formatNotification( room.name );
 
-            // TODO remove this, we make every single reminder 5 seconds from now for testing
-            Calendar calendar = Calendar.getInstance();
-            calendar.setTimeInMillis( calendar.getTimeInMillis() + 5000 );
+            //Calendar calendar = Calendar.getInstance();
+            //calendar.setTimeInMillis( calendar.getTimeInMillis() + 5000 );
 
-            Log.i( TAG, "we have scheduled " + room.name + " at " + room.reminder.toString() );
-            Log.i( TAG, "we have actually scheduled " + room.name + " at " + calendar.getTime() );
+            Log.i( TAG, "we have scheduled " + room.name + " at " + room.reminder.toString() + " UTC" );
+            //Log.i( TAG, "we have actually scheduled " + room.name + " at " + calendar.getTime() );
 
-            NotificationScheduler.getInstance().scheduleNotification( context, message, calendar.getTime() );//room.reminder );
+            NotificationScheduler.getInstance().scheduleNotification( context, message, room.reminder ); //calendar.getTime() );
         }
     }
 }

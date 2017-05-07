@@ -4,9 +4,14 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ContentValues;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+import android.support.v4.app.NavUtils;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -21,14 +26,17 @@ import yuioyuoi.cleaning.data.RoomDbHelper;
 import yuioyuoi.cleaning.model.RoomContract;
 import yuioyuoi.cleaning.notification.NotificationScheduler;
 
-public class AddRoom extends Activity implements AdapterView.OnItemSelectedListener
+public class AddRoom extends AppCompatActivity implements AdapterView.OnItemSelectedListener
 {
     private static final String TAG = "AddRoom";
+
+    public final static String EXTRA_ROOM = "yuioyuio.cleaning.activity.AddRoom.extra.room";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_room);
+
 
         /*Spinner spinner = (Spinner) findViewById(R.id.room_spinner);
         List<String> itemList = new ArrayList<String>();
@@ -107,29 +115,32 @@ public class AddRoom extends Activity implements AdapterView.OnItemSelectedListe
         EditText roomNameEditText = (EditText) findViewById(R.id.room_name);
         EditText subtype1EditText = (EditText) findViewById(R.id.subtype1);
         EditText subtype2EditText = (EditText) findViewById(R.id.subtype2);
+        EditText actionEditText = (EditText) findViewById(R.id.action);
         EditText reminderEditText = (EditText) findViewById(R.id.reminder);
         EditText recurrenceEditText = (EditText) findViewById(R.id.recurrence);
 
         // TODO validate values, do this when wire these inputs properly with spinners
 
         RoomDbHelper roomDbHelper = new RoomDbHelper(getApplicationContext());
-        SQLiteDatabase db = roomDbHelper.getWritableDatabase();
-        ContentValues values = new ContentValues();
-        values.put(RoomContract.RoomEntry.COLUMN_NAME_ROOM, roomNameEditText.getText().toString());
-        values.put(RoomContract.RoomEntry.COLUMN_NAME_SUBTYPE_1, subtype1EditText.getText().toString());
-        values.put(RoomContract.RoomEntry.COLUMN_NAME_SUBTYPE_2, subtype2EditText.getText().toString());
-        values.put(RoomContract.RoomEntry.COLUMN_NAME_REMINDER, reminderEditText.getText().toString());
-        values.put(RoomContract.RoomEntry.COLUMN_NAME_RECURRENCE, recurrenceEditText.getText().toString());
 
-        long newRowId = db.insert(RoomContract.RoomEntry.TABLE_NAME, null, values);
-        Log.i(TAG, "inserted row id " + newRowId);
-
-        db.close();
+        roomDbHelper.newRoom( roomNameEditText.getText().toString(),
+                subtype1EditText.getText().toString(),
+                subtype2EditText.getText().toString(),
+                actionEditText.getText().toString(),
+                reminderEditText.getText().toString(),
+                recurrenceEditText.getText().toString());
 
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeInMillis( calendar.getTimeInMillis() + 5000 );
 
         // TODO we need to schedule the next alarm on this!
+        // TODO generate the text in the notification from somewhere common
         NotificationScheduler.getInstance().scheduleNotification( this, "notify!", calendar.getTime() );
+
+        Intent intent = getIntent();
+        intent.putExtra( EXTRA_ROOM, roomNameEditText.getText().toString() );
+        setResult( RESULT_OK, intent );
+
+        finish();
     }
 }

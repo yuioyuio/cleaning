@@ -9,6 +9,7 @@ import android.content.pm.PackageManager;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -33,6 +34,7 @@ import yuioyuoi.cleaning.model.Room;
 import yuioyuoi.cleaning.model.RoomContract;
 import yuioyuoi.cleaning.notification.NotificationScheduler;
 import yuioyuoi.cleaning.startup.BootReceiver;
+import yuioyuoi.cleaning.startup.Wizard;
 
 public class Dashboard extends AppCompatActivity {
 
@@ -42,6 +44,7 @@ public class Dashboard extends AppCompatActivity {
     public final static String EXTRA_MESSAGE = "yuioyuio.cleaning.activities.extra.MESSAGE";
     public final static String KEY_PREFS_FIRST_LAUNCH = "first_launch";
 
+    static final int ADD_ROOM_REQUEST = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,10 +59,7 @@ public class Dashboard extends AppCompatActivity {
             public void onClick(View view) {
                 // TODO on the plus button go to the activity to add name
                 Intent intent = new Intent( Dashboard.this, AddRoom.class );
-                startActivity( intent );
-
-                //Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                //        .setAction("Action", null).show();
+                startActivityForResult( intent, ADD_ROOM_REQUEST );
             }
         });
 
@@ -81,12 +81,47 @@ public class Dashboard extends AppCompatActivity {
             pm.setComponentEnabledSetting(receiver,
                     PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
                     PackageManager.DONT_KILL_APP);
-        }
 
-        // TODO remove this once we're sure it works
-        PackageManager pm = this.getPackageManager();
-        ComponentName receiver = new ComponentName( this, BootReceiver.class );
-        Log.i( TAG, "component should be enabled " + pm.getComponentEnabledSetting( receiver ) );
+            // on first time setup we generate some default rooms
+            Wizard wizard = new Wizard();
+            wizard.create( getApplicationContext() );
+        }
+        createListView();
+
+        Log.i(TAG, "loaded all room data");
+    }
+
+    // TODO should do this in an asynch task / using a loader seems overkill at this point
+    // guess the idea of a loader might be that this only gets called when the activity is created and not resumed from paused etc
+    public void createListView()
+    {
+        ProgressBar progressBar = new ProgressBar(this);
+        progressBar.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT, Gravity.CENTER));
+        progressBar.setIndeterminate(true);
+
+        // must add the progress bar to the root of the layout
+        ViewGroup root = (ViewGroup) findViewById(R.id.layout_dashboard);
+        root.addView(progressBar);
+
+        ListView listView = (ListView) findViewById(R.id.upcoming_cleaning);
+        listView.setEmptyView(progressBar);
+
+        RoomDbHelper roomDbHelper = new RoomDbHelper(getApplicationContext());
+        List<Room> roomList = roomDbHelper.getAllRooms();
+        ListAdapter listAdapter = new ListAdapter(this, R.layout.itemlistrow, roomList);
+        listView.setAdapter(listAdapter);
+    }
+
+    public void refreshListView()
+    {
+        ListView listView = ( ListView ) findViewById( R.id.upcoming_cleaning );
+        ListAdapter listAdapter = ( ( ListAdapter ) listView.getAdapter() );
+        listAdapter.clear();
+
+        RoomDbHelper roomDbHelper = new RoomDbHelper( getApplicationContext() );
+        listAdapter.addAll( roomDbHelper.getAllRooms() );
+        ( ( ListAdapter ) listView.getAdapter() ).notifyDataSetChanged();
     }
 
     @Override
@@ -134,89 +169,33 @@ public class Dashboard extends AppCompatActivity {
                 calendar.setTimeInMillis( calendar.getTimeInMillis() + 30000 );
                 scheduler.scheduleNotification( this, "30 second delay", calendar.getTime() );
                 return true;
+            case R.id.boot:
+                boot( null );
+                return true;
             default:
                 return super.onOptionsItemSelected( item );
         }
     }
 
-    /**
-     * transition to an activity
-     */
-    public void sendMessage( View view )
-    {
-        Intent intent = new Intent( this, DisplayMessageActivity.class );
-        EditText editText = ( EditText ) findViewById( R.id.edit_message );
-        String message = editText.getText().toString();
-        intent.putExtra( EXTRA_MESSAGE, message );
-        startActivity( intent );
-    }
-
-    /**
-     * persistence
-     * TODO move this somewhere else
-     */
-
-    // This is the Adapter being used to display the list's data
-    SimpleCursorAdapter mAdapter;
-
-    // These are the Contacts rows that we will retrieve
-    static final String[] PROJECTION = new String[]{RoomContract.RoomEntry._ID,
-            RoomContract.RoomEntry.COLUMN_NAME_ROOM};
-
-    // This is the select criteria
-    static final String SELECTION = "((" +
-            RoomContract.RoomEntry.COLUMN_NAME_ROOM + " NOTNULL) AND (" +
-            RoomContract.RoomEntry.COLUMN_NAME_ROOM + " != '' ))";
-
-
-    public void storeData(View view) {
-        RoomDbHelper mDbHelper = new RoomDbHelper(getApplicationContext());
-
-        EditText editText = (EditText) findViewById(R.id.room_name);
-        String roomName = editText.getText().toString();
-        editText = (EditText) findViewById(R.id.reminder);
-        String reminder = editText.getText().toString();
-
-        // TODO this should be done in an async way
-        // Gets the data repository in write mode
-        SQLiteDatabase db = mDbHelper.getWritableDatabase();
-
-        // Create a new map of values, where column names are the keys
-        ContentValues values = new ContentValues();
-        values.put(RoomContract.RoomEntry.COLUMN_NAME_ROOM, roomName);
-        values.put(RoomContract.RoomEntry.COLUMN_NAME_REMINDER, reminder);
-
-        // Insert the new row, returning the primary key value of the new row
-        long newRowId = db.insert(RoomContract.RoomEntry.TABLE_NAME, null, values);
-        Log.i(TAG, "inserted row id " + newRowId);
-
-        db.close();
-    }
-
-    public void readData(View view)
-    {
-        ProgressBar progressBar = new ProgressBar(this);
-        progressBar.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT, Gravity.CENTER));
-        progressBar.setIndeterminate(true);
-
-        ListView listView = (ListView) findViewById(R.id.upcoming_cleaning);
-        listView.setEmptyView(progressBar);
-
-        // must add the progress bar to the root of the layout
-        ViewGroup root = (ViewGroup) findViewById(android.R.id.content);
-        root.addView(progressBar);
-
-        RoomDbHelper roomDbHelper = new RoomDbHelper(getApplicationContext());
-        List<Room> roomList = roomDbHelper.getAllRooms();
-        ListAdapter listAdapter = new ListAdapter(this, R.layout.itemlistrow, roomList);
-        listView.setAdapter(listAdapter);
-
-        Log.i(TAG, "loaded all room data");
-    }
-
     public void boot( View view )
     {
         sendBroadcast( new Intent( "boot" ) );
+    }
+
+    @Override
+    protected void onActivityResult( int requestCode, int resultCode, Intent data )
+    {
+        switch( requestCode )
+        {
+            case ADD_ROOM_REQUEST:
+                refreshListView();
+                String room = data.getStringExtra(AddRoom.EXTRA_ROOM);
+                Snackbar.make( findViewById(R.id.layout_dashboard), room + " added and reminder scheduled", Snackbar.LENGTH_LONG)
+                        .setAction("Action", null).show();
+                break;
+            default:
+                break;
+        }
+        super.onActivityResult(requestCode, resultCode, data);
     }
 }

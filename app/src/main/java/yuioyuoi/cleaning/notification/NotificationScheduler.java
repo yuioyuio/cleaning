@@ -31,9 +31,12 @@ public class NotificationScheduler
     public void scheduleNotification( Context context, String content, Date utcReminder )
     {
         Intent notificationIntent = new Intent( context, NotificationPublisher.class );
-        notificationIntent.putExtra( NotificationPublisher.NOTIFICATION_ID, content.hashCode() );
-        notificationIntent.putExtra( NotificationPublisher.NOTIFICATION, getNotification( context, content ) );
-        PendingIntent pendingIntent = PendingIntent.getBroadcast( context, content.hashCode(), notificationIntent, PendingIntent.FLAG_ONE_SHOT );
+
+        int notificationId = content.hashCode();
+        Notification notification = NotificationPublisher.getNotification( context, content );
+        notificationIntent.putExtra( NotificationPublisher.NOTIFICATION_ID, notificationId );
+        notificationIntent.putExtra( NotificationPublisher.NOTIFICATION, notification );
+        PendingIntent pendingIntent = PendingIntent.getBroadcast( context, notificationId, notificationIntent, PendingIntent.FLAG_ONE_SHOT );
 
         Date utcNow = Calendar.getInstance( TimeZone.getTimeZone( "UTC" ) ).getTime();
         if( utcReminder.after( utcNow ) )
@@ -43,16 +46,9 @@ public class NotificationScheduler
         }
         else
         {
-            // TODO if nag mode turned on, immediately inform the user to get their shit together and clean their house
             Log.i( TAG, "reminder already passed! we nag the user" );
+            // immediately publish the notification
+            NotificationPublisher.publishNotification( context, notificationId, notification );
         }
-    }
-
-    private Notification getNotification( Context context, String content ) {
-        Notification.Builder builder = new Notification.Builder( context );
-        builder.setContentTitle( "Scheduled Notification" );
-        builder.setContentText( content );
-        builder.setSmallIcon( R.mipmap.ic_launcher );
-        return builder.build();
     }
 }
