@@ -1,38 +1,54 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_height="wrap_content" android:orientation="vertical"
-    android:layout_width="fill_parent">
+    android:layout_width="match_parent">
 
     <TextView android:textColor="#ff0000"
         android:id="@+id/room"
-        android:layout_width="fill_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_toLeftOf="@+id/checkbox"
         android:textStyle="bold"
         android:typeface="monospace" />
 
+    <CheckBox
+        android:id="@+id/checkbox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:focusable="false"/>
+
     <TextView android:textColor="#ff0000"
         android:id="@+id/subtype1"
-        android:layout_width="fill_parent"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@+id/room"
         android:layout_alignParentStart="true" />
 
     <TextView android:textColor="#ff0000"
         android:id="@+id/subtype2"
-        android:layout_width="fill_parent"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@+id/subtype1"
         android:layout_alignParentStart="true" />
 
+    <TextView android:textColor="#ff0000"
+              android:id="@+id/action"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:layout_below="@+id/subtype2"
+              android:layout_alignParentStart="true" />
+
     <TextView android:layout_height="wrap_content"
-        android:layout_width="fill_parent"
+        android:layout_width="match_parent"
         android:textColor="#ff0000"
         android:id="@+id/reminder"
-        android:layout_below="@+id/subtype2"
+        android:layout_below="@+id/action"
         android:layout_alignParentStart="true" />
 
     <TextView android:layout_height="wrap_content"
-        android:layout_width="fill_parent"
+        android:layout_width="match_parent"
         android:textColor="#ff0000"
         android:id="@+id/recurrence"
         android:layout_below="@+id/reminder"

@@ -36,30 +36,35 @@ public class ListAdapter extends ArrayAdapter<Room> {
         Room p = getItem(position);
 
         if (p != null) {
-            TextView tt1 = (TextView) v.findViewById(R.id.room);
-            TextView tt2 = (TextView) v.findViewById(R.id.subtype1);
-            TextView tt3 = (TextView) v.findViewById(R.id.subtype1);
-            TextView tt4 = (TextView) v.findViewById(R.id.reminder);
-            TextView tt5 = (TextView) v.findViewById(R.id.recurrence);
+            TextView roomTextView = (TextView) v.findViewById(R.id.room);
+            TextView subtype1TextView = (TextView) v.findViewById(R.id.subtype1);
+            TextView subtype2TextView = (TextView) v.findViewById(R.id.subtype2);
+            TextView actionTextView = (TextView) v.findViewById(R.id.action);
+            TextView reminderTextView = (TextView) v.findViewById(R.id.reminder);
+            TextView recurrenceTextView = (TextView) v.findViewById(R.id.recurrence);
 
-            if (tt1 != null) {
-                tt1.setText(p.name);
+            if (roomTextView != null) {
+                roomTextView.setText(p.name);
             }
 
-            if (tt2 != null) {
-                tt2.setText(p.subtype1);
+            if (subtype1TextView != null) {
+                subtype1TextView.setText(p.subtype1);
             }
 
-            if (tt3 != null) {
-                tt3.setText(p.subtype2);
+            if (subtype2TextView != null) {
+                subtype2TextView.setText(p.subtype2);
             }
 
-            if (tt4 != null) {
-                tt4.setText(p.reminder.toString());
+            if (actionTextView != null) {
+                actionTextView.setText(p.action);
             }
 
-            if (tt5 != null) {
-                tt5.setText(p.recurrence);
+            if (reminderTextView != null) {
+                reminderTextView.setText(p.reminder.toString());
+            }
+
+            if (recurrenceTextView != null) {
+                recurrenceTextView.setText(p.recurrence);
             }
         }
 

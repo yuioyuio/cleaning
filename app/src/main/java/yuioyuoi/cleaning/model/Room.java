@@ -8,6 +8,7 @@ import java.util.Date;
 
 public class Room
 {
+    public String _id;
     public String name;
     public String subtype1;
     public String subtype2;

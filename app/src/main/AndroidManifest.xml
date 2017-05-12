@@ -40,6 +40,15 @@
                 android:value=".activity.Dashboard" />
         </activity>
 
+        <activity
+            android:name=".activity.EditRoom"
+            android:label="@string/title_activity_edit_room"
+            android:parentActivityName=".activity.Dashboard" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".activity.Dashboard" />
+        </activity>
+
         <!-- receivers -->
         <receiver android:name=".notification.NotificationPublisher" />
         <receiver android:name=".startup.BootReceiver"

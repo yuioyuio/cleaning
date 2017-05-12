@@ -1,17 +1,10 @@
 package yuioyuoi.cleaning.activity;
 
-import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
-import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
-import android.util.Log;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -23,7 +16,6 @@ import java.util.List;
 
 import yuioyuoi.cleaning.R;
 import yuioyuoi.cleaning.data.RoomDbHelper;
-import yuioyuoi.cleaning.model.RoomContract;
 import yuioyuoi.cleaning.notification.NotificationScheduler;
 
 public class AddRoom extends AppCompatActivity implements AdapterView.OnItemSelectedListener

@@ -37,15 +37,15 @@ public class BootReceiver extends BroadcastReceiver
 
         for( Room room : roomList )
         {
-            String message = NotificationFormatter.formatNotification( room.name );
+
 
             //Calendar calendar = Calendar.getInstance();
             //calendar.setTimeInMillis( calendar.getTimeInMillis() + 5000 );
 
-            Log.i( TAG, "we have scheduled " + room.name + " at " + room.reminder.toString() + " UTC" );
+
             //Log.i( TAG, "we have actually scheduled " + room.name + " at " + calendar.getTime() );
 
-            NotificationScheduler.getInstance().scheduleNotification( context, message, room.reminder ); //calendar.getTime() );
+            NotificationScheduler.getInstance().scheduleNotification( context, room.name, room.reminder ); //calendar.getTime() );
         }
     }
 }

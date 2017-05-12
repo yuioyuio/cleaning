@@ -26,7 +26,7 @@ public class RoomDbHelper extends SQLiteOpenHelper
 {
     private static final String TAG = "RoomDbHelper";
 
-    private static final SimpleDateFormat ISO_8601_FORMAT = new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss" );
+    public static final SimpleDateFormat ISO_8601_FORMAT = new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss" );
 
     private static final String TEXT_TYPE = " TEXT";
     private static final String COMMA_SEP = ",";
@@ -88,6 +88,96 @@ public class RoomDbHelper extends SQLiteOpenHelper
         db.close();
     }
 
+    public void saveRoom( String _id,
+                          String room,
+                          String subtype1,
+                          String subtype2,
+                          String action,
+                          String reminder,
+                          String recurrence )
+    {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        values.put(RoomContract.RoomEntry.COLUMN_NAME_ROOM, room);
+        values.put(RoomContract.RoomEntry.COLUMN_NAME_SUBTYPE_1, subtype1);
+        values.put(RoomContract.RoomEntry.COLUMN_NAME_SUBTYPE_2, subtype2);
+        values.put(RoomContract.RoomEntry.COLUMN_NAME_ACTION, action);
+        values.put(RoomContract.RoomEntry.COLUMN_NAME_REMINDER, reminder);
+        values.put(RoomContract.RoomEntry.COLUMN_NAME_RECURRENCE, recurrence);
+
+        String selection = RoomEntry._ID + " = ?";
+        String[] selectionArgs = { _id };
+
+        int updated = db.update( RoomEntry.TABLE_NAME,
+                values,
+                selection,
+                selectionArgs  );
+
+        // TODO don't do this, but only one row should ever be updated since we're using _id
+        assert updated == 1;
+
+        db.close();
+    }
+
+    public Room getRoom(String _id)
+    {
+        // TODO should do this in an async way and not on the main thread
+        SQLiteDatabase db = getReadableDatabase();
+
+        String[] projection = {
+                RoomContract.RoomEntry._ID,
+                RoomContract.RoomEntry.COLUMN_NAME_ROOM,
+                RoomContract.RoomEntry.COLUMN_NAME_SUBTYPE_1,
+                RoomContract.RoomEntry.COLUMN_NAME_SUBTYPE_2,
+                RoomContract.RoomEntry.COLUMN_NAME_ACTION,
+                RoomContract.RoomEntry.COLUMN_NAME_REMINDER,
+                RoomContract.RoomEntry.COLUMN_NAME_RECURRENCE
+        };
+
+        String selection = RoomEntry._ID + " = ?";
+        String[] selectionArgs = { _id };
+
+        Cursor cursor = db.query(
+                RoomContract.RoomEntry.TABLE_NAME,
+                projection,
+                selection,
+                selectionArgs,
+                null,
+                null,
+                null
+        );
+
+        cursor.moveToNext();
+        Room room = new Room();
+
+        // TODO remove this duplication with getallrooms
+        room._id = cursor.getString(cursor.getColumnIndex(RoomEntry._ID));
+        room.name = cursor.getString(cursor.getColumnIndex(RoomEntry.COLUMN_NAME_ROOM));
+        room.subtype1 = cursor.getString(cursor.getColumnIndex(RoomEntry.COLUMN_NAME_SUBTYPE_1));
+        room.subtype2 = cursor.getString(cursor.getColumnIndex(RoomEntry.COLUMN_NAME_SUBTYPE_2));
+        room.action = cursor.getString(cursor.getColumnIndex(RoomEntry.COLUMN_NAME_ACTION));
+
+        try
+        {
+            room.reminder = ISO_8601_FORMAT.parse( cursor.getString( cursor.getColumnIndex( RoomEntry.COLUMN_NAME_REMINDER ) ) );
+        }
+        catch( ParseException e )
+        {
+            // TODO if we really get an exception here we should make the reminder null and
+            // immediately ask the user to reset their reminder
+            Log.e( TAG, "failed to parse reminder", e );
+            room.reminder = Calendar.getInstance().getTime();
+        }
+
+        room.recurrence = cursor.getString(cursor.getColumnIndex(RoomContract.RoomEntry.COLUMN_NAME_RECURRENCE));
+
+        // TODO probably should do this in finally
+        db.close();
+
+        return room;
+    }
+
     public List<Room> getAllRooms()
     {
         // TODO should do this in an async way and not on the main thread
@@ -111,7 +201,7 @@ public class RoomDbHelper extends SQLiteOpenHelper
                 projection,
                 null,
                 null,
-                RoomContract.RoomEntry.COLUMN_NAME_ROOM,
+                null,//RoomContract.RoomEntry.COLUMN_NAME_ROOM,
                 null,
                 sortOrder
         );
@@ -120,10 +210,11 @@ public class RoomDbHelper extends SQLiteOpenHelper
 
         while (cursor.moveToNext()) {
             Room room = new Room();
-            room.name = cursor.getString(cursor.getColumnIndex(RoomContract.RoomEntry.COLUMN_NAME_ROOM));
-            room.subtype1 = cursor.getString(cursor.getColumnIndex(RoomContract.RoomEntry.COLUMN_NAME_SUBTYPE_1));
-            room.subtype2 = cursor.getString(cursor.getColumnIndex(RoomContract.RoomEntry.COLUMN_NAME_SUBTYPE_2));
-            room.action = cursor.getString(cursor.getColumnIndex(RoomContract.RoomEntry.COLUMN_NAME_ACTION));
+            room._id = cursor.getString(cursor.getColumnIndex(RoomEntry._ID));
+            room.name = cursor.getString(cursor.getColumnIndex(RoomEntry.COLUMN_NAME_ROOM));
+            room.subtype1 = cursor.getString(cursor.getColumnIndex(RoomEntry.COLUMN_NAME_SUBTYPE_1));
+            room.subtype2 = cursor.getString(cursor.getColumnIndex(RoomEntry.COLUMN_NAME_SUBTYPE_2));
+            room.action = cursor.getString(cursor.getColumnIndex(RoomEntry.COLUMN_NAME_ACTION));
 
             try
             {

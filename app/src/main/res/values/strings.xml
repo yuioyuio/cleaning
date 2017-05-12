@@ -7,6 +7,7 @@
     <string name="action_search">Search</string>
     <string name="title_activity_display_message">My Message</string>
     <string name="title_activity_add_room">Add Room</string>
+    <string name="title_activity_edit_room">Edit Room</string>
 
     <string name="button_store">Store</string>
     <string name="button_read">Read</string>
