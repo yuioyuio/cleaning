@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 
 import yuioyuoi.cleaning.R;
+import yuioyuoi.cleaning.activity.Dashboard;
 
 /**
  * Created by Jean on 20/11/2016.
@@ -27,6 +28,9 @@ public class NotificationPublisher extends BroadcastReceiver {
         System.out.println( "notifying with id " + id + " " + notification.toString());
 
         publishNotification( context, id, notification );
+
+        Intent refreshIntent = new Intent( Dashboard.REFRESH_DASHBOARD );
+        context.sendBroadcast( refreshIntent );
     }
 
     public static void publishNotification( Context context, int id, Notification notification )

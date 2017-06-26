@@ -1,12 +1,12 @@
 package yuioyuoi.cleaning.activity;
 
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -19,11 +19,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
-import android.widget.SimpleCursorAdapter;
 
 import java.util.Calendar;
 import java.util.List;
@@ -32,12 +30,12 @@ import yuioyuoi.cleaning.R;
 import yuioyuoi.cleaning.activity.adapter.ListAdapter;
 import yuioyuoi.cleaning.data.RoomDbHelper;
 import yuioyuoi.cleaning.model.Room;
-import yuioyuoi.cleaning.model.RoomContract;
 import yuioyuoi.cleaning.notification.NotificationScheduler;
 import yuioyuoi.cleaning.startup.BootReceiver;
 import yuioyuoi.cleaning.startup.Wizard;
 
-public class Dashboard extends AppCompatActivity {
+public class Dashboard extends AppCompatActivity implements ScheduleRoomFragment.OnSaveListener
+{
 
 
     private static final String TAG = "Dashboard";
@@ -45,6 +43,8 @@ public class Dashboard extends AppCompatActivity {
     // TODO remove this
     public final static String EXTRA_MESSAGE = "yuioyuio.cleaning.activities.extra.MESSAGE";
     public final static String KEY_PREFS_FIRST_LAUNCH = "first_launch";
+
+    public final static String REFRESH_DASHBOARD = "yuioyuio.cleaning.dashboard.refresh";
 
     public final static String EXTRA_ROOM_ID = "yuioyuio.cleaning.activity.Dashboard.ROOM_ID";
     public final static String EXTRA_ROOM_NAME = "yuioyuio.cleaning.activity.Dashboard.ROOM_NAME";
@@ -56,6 +56,15 @@ public class Dashboard extends AppCompatActivity {
 
     static final int ADD_ROOM_REQUEST = 1;
     static final int EDIT_ROOM_REQUEST = 2;
+    static final int SCHEDULE_ROOM_REQUEST = 3;
+
+    private BroadcastReceiver messageReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent)
+        {
+            refreshListView();
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -102,6 +111,20 @@ public class Dashboard extends AppCompatActivity {
         Log.i(TAG, "loaded all room data");
     }
 
+    @Override
+    protected void onResume()
+    {
+        super.onResume();
+        this.registerReceiver( messageReceiver, new IntentFilter( REFRESH_DASHBOARD ) );
+    }
+
+    @Override
+    protected void onPause()
+    {
+        super.onPause();
+        this.unregisterReceiver( messageReceiver );
+    }
+
     // TODO should do this in an asynch task / using a loader seems overkill at this point
     // guess the idea of a loader might be that this only gets called when the activity is created and not resumed from paused etc
     public void createListView()
@@ -122,9 +145,9 @@ public class Dashboard extends AppCompatActivity {
         List<Room> roomList = roomDbHelper.getAllRooms();
         ListAdapter listAdapter = new ListAdapter(this, R.layout.itemlistrow, roomList);
         listView.setAdapter(listAdapter);
-        listView.setOnItemClickListener( new AdapterView.OnItemClickListener() {
+        listView.setOnItemLongClickListener( new AdapterView.OnItemLongClickListener() {
             @Override
-            public void onItemClick( AdapterView< ? > parent, View view, int position, long id )
+            public boolean onItemLongClick( AdapterView< ? > parent, View view, int position, long id )
             {
                 System.out.println("position " + position);
                 System.out.println("id " + id);
@@ -142,9 +165,42 @@ public class Dashboard extends AppCompatActivity {
 
                 startActivityForResult( intent, EDIT_ROOM_REQUEST );
 
+                return true;
+            }
+        } );
+        listView.setOnItemClickListener( new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick( AdapterView< ? > parent, View view, int position, long id )
+            {
+                System.out.println("position " + position);
+                System.out.println("id " + id);
+
+                Room room = (Room) parent.getAdapter().getItem(position);
+
                 // TODO this is for the fragment
-                //SchedulePopupFragment popup = new SchedulePopupFragment();
-                //popup.show( getFragmentManager(), "schedulepopup" );
+                ScheduleRoomFragment popup = new ScheduleRoomFragment();
+
+                Bundle bundle = new Bundle();
+                bundle.putString( EXTRA_ROOM_ID, room._id );
+                bundle.putString( EXTRA_ROOM_NAME, room.name );
+                bundle.putString( EXTRA_ROOM_SUBTYPE1, room.subtype1 );
+                bundle.putString( EXTRA_ROOM_SUBTYPE2, room.subtype2 );
+                bundle.putString( EXTRA_ROOM_ACTION, room.action );
+                bundle.putString( EXTRA_ROOM_REMINDER, RoomDbHelper.ISO_8601_FORMAT.format( room.reminder ) );
+                bundle.putString( EXTRA_ROOM_RECURRENCE, room.recurrence );
+                popup.setArguments( bundle );
+                popup.show( getSupportFragmentManager(), "schedulepopup" );
+
+                /*Intent intent = new Intent( Dashboard.this, ScheduleRoom.class );
+                intent.putExtra( EXTRA_ROOM_ID, room._id );
+                intent.putExtra( EXTRA_ROOM_NAME, room.name );
+                intent.putExtra( EXTRA_ROOM_SUBTYPE1, room.subtype1 );
+                intent.putExtra( EXTRA_ROOM_SUBTYPE2, room.subtype2 );
+                intent.putExtra( EXTRA_ROOM_ACTION, room.action );
+                intent.putExtra( EXTRA_ROOM_REMINDER, RoomDbHelper.ISO_8601_FORMAT.format( room.reminder ) );
+                intent.putExtra( EXTRA_ROOM_RECURRENCE, room.recurrence );
+
+                startActivityForResult( intent, SCHEDULE_ROOM_REQUEST );*/
             }
         } );
     }
@@ -221,23 +277,37 @@ public class Dashboard extends AppCompatActivity {
     @Override
     protected void onActivityResult( int requestCode, int resultCode, Intent data )
     {
-        String room = data.getStringExtra(AddRoom.EXTRA_ROOM);
+        String room = null;
 
-        switch( requestCode )
+        if( resultCode == RESULT_OK )
         {
-            case ADD_ROOM_REQUEST:
-                refreshListView();
-                Snackbar.make( findViewById(R.id.layout_dashboard), room + " added and reminder scheduled", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-                break;
-            case EDIT_ROOM_REQUEST:
-                refreshListView();
-                Snackbar.make( findViewById(R.id.layout_dashboard), room + " saved", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-                break;
-            default:
-                break;
+            switch( requestCode )
+            {
+                case ADD_ROOM_REQUEST:
+                    refreshListView();
+                    room = data.getStringExtra(AddRoom.EXTRA_ROOM);
+                    Snackbar.make( findViewById(R.id.layout_dashboard), room + " added and reminder scheduled", Snackbar.LENGTH_LONG)
+                            .setAction("Action", null).show();
+                    break;
+                case EDIT_ROOM_REQUEST:
+                    refreshListView();
+                    room = data.getStringExtra(AddRoom.EXTRA_ROOM);
+                    Snackbar.make( findViewById(R.id.layout_dashboard), room + " saved", Snackbar.LENGTH_LONG)
+                            .setAction("Action", null).show();
+                    break;
+                default:
+                    break;
+            }
         }
         super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    @Override
+    public void onSave( String roomName )
+    {
+        // TODO generalise these snackbars, this is a duplicate of onActivityResult for edit
+        refreshListView();
+        Snackbar.make( findViewById(R.id.layout_dashboard), roomName + " saved", Snackbar.LENGTH_LONG)
+                .setAction("Action", null).show();
     }
 }
